@@ -1,4 +1,5 @@
-# 변화점
+# %%
+ # 변화점
 # 1. baseline 코드 오타 수정
 # 2. baseline 코드 .py로 변환
 # 3. 시작 부분 get_ipython() 두 줄 주석화
@@ -336,7 +337,7 @@ pred = model.predict(X_val)
 
 # 회귀 관련 metric을 통해 train/valid의 모델 적합 결과를 관찰합니다.
 print(f'RMSE test: {np.sqrt(metrics.mean_squared_error(y_val, pred))}')
-
+# %%
 # - 변수 중요도도 확인해보도록 하겠습니다.
 
 # 위 feature importance를 시각화해봅니다.
@@ -450,3 +451,4 @@ output = '/data/ephemeral/home/AI_Portfolio/AI_Projects/House_Price_Prediction/c
 # 앞서 예측한 예측값들을 저장합니다.
 preds_df = pd.DataFrame(real_test_pred.astype(int), columns=["target"])
 preds_df.to_csv(f'{output}_output.csv', index=False)
+# %%
