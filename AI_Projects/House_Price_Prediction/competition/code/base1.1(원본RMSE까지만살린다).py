@@ -566,157 +566,13 @@ pred = model.predict(X_val)
 print(f'RMSE test: {np.sqrt(metrics.mean_squared_error(y_val, pred))}')
 
 
-# - 변수 중요도도 확인해보도록 하겠습니다.
-
-# In[ ]:
-
-
-# 위 feature importance를 시각화해봅니다.
-importances = pd.Series(model.feature_importances_, index=list(X_train.columns))
-importances = importances.sort_values(ascending=False)
-
-plt.figure(figsize=(10,8))
-plt.title("Feature Importances")
-sns.barplot(x=importances, y=importances.index)
-plt.show()
-
-
-# In[ ]:
-
-
 # 학습된 모델을 저장합니다. Pickle 라이브러리를 이용하겠습니다.
 with open('saved_model.pkl', 'wb') as f:
     pickle.dump(model, f)
 
-
-# ### 5.3. Feature selection
-
-# - 어떤 변수가 유용한 변수인지 확인해보기 위해 permutation selection을 이용해보겠습니다.
-
-# In[ ]:
-
-
-# Permutation importance 방법을 변수 선택에 이용해보겠습니다.
-perm = PermutationImportance(model,        # 위에서 학습된 모델을 이용하겠습니다.
-                             scoring = "neg_mean_squared_error",        # 평가 지표로는 회귀문제이기에 negative rmse를 사용합니다. (neg_mean_squared_error : 음의 평균 제곱 오차)
-                             random_state = 42,
-                             n_iter=3).fit(X_val, y_val)
-eli5.show_weights(perm, feature_names = X_val.columns.tolist())    # valid data에 대해 적합시킵니다.
-
-
-# - 분석 결과 "계약년", "전용면적" 변수가 유의한 변수로 보입니다. 따라서 이 변수로 또 다른 파생변수를 더 생성해보거나, 중요도가 낮아보이는 변수를 제거해 차원의 저주를 막아볼 수도 있습니다.
-
-# ### 5.4. Valid prediction 분석
-
-# - 예측값을 분석해보기 위해 valid prediction을 확인해보겠습니다.
-
-# In[ ]:
-
-
-# Validation dataset에 target과 pred 값을 채워주도록 하겠습니다.
-X_val['target'] = y_val
-X_val['pred'] = pred
-
-
-# In[ ]:
-
-
-# Squared_error를 계산하는 함수를 정의하겠습니다.
-def calculate_se(target, pred):
-    squared_errors = (target - pred) ** 2
-    return squared_errors
-
-# RMSE 계산
-squared_errors = calculate_se(X_val['target'], X_val['pred'])
-X_val['error'] = squared_errors
-
-
-# In[ ]:
-
-
-# Error가 큰 순서대로 sorting 해 보겠습니다.
-X_val_sort = X_val.sort_values(by='error', ascending=False)       # 내림차순 sorting
-
-
-# In[ ]:
-
-
-X_val_sort.head()
-
-
-# - 예측을 잘 하지 못한 top 100개의 데이터와 예측을 잘한 top 100개의 데이터를 비교해보겠습니다.
-
-# In[ ]:
-
-
-X_val_sort_top100 = X_val.sort_values(by='error', ascending=False).head(100)        # 예측을 잘 하지못한 top 100개의 data
-X_val_sort_tail100 = X_val.sort_values(by='error', ascending=False).tail(100)       # 예측을 잘한 top 100개의 data
-
-
-# In[ ]:
-
-
-# 해석을 위해 레이블인코딩 된 변수를 복원해줍니다.
-error_top100 = X_val_sort_top100.copy()
-for column in categorical_columns_v2 :     # 앞서 레이블 인코딩에서 정의했던 categorical_columns_v2 범주형 변수 리스트를 사용합니다.
-    error_top100[column] = label_encoders[column].inverse_transform(X_val_sort_top100[column])
-
-best_top100 = X_val_sort_tail100.copy()
-for column in categorical_columns_v2 :     # 앞서 레이블 인코딩에서 정의했던 categorical_columns_v2 범주형 변수 리스트를 사용합니다.
-    best_top100[column] = label_encoders[column].inverse_transform(X_val_sort_tail100[column])
-
-
-# In[ ]:
-
-
-display(error_top100.head(1))
-display(best_top100.head(1))
-
-
-# - 이제 분포를 비교해보도록 하겠습니다.
-
-# In[ ]:
-
-
-sns.boxplot(data = error_top100, x='target')
-plt.title('The worst top100 prediction의 target 분포')
-plt.show()
-
-sns.boxplot(data = best_top100, x='target', color='orange')
-plt.title('The best top100 prediction의 target 분포')
-plt.show()
-
-
-# - Taget 분포를 보니 좋은 예측을 보인 top 100개의 data보다 상대적으로 나쁜 예측을 보인 top 100 dataset들이 높은 가격을 보였음을 확인할 수 있습니다. 이에 대한 모델링 및 처리가 필요해보입니다.
-
-# In[ ]:
-
-
-sns.histplot(data = error_top100, x='전용면적', alpha=0.5)
-sns.histplot(data = best_top100, x='전용면적', color='orange', alpha=0.5)
-plt.title('전용면적 분포 비교')
-plt.show()
-
-
-# - 전용면적 또한 나쁜 예측을 보인 집들이 더 넓음을 확인할 수 있습니다.
-
-# ## 6. Inference
-
-# In[ ]:
-
-
-dt_test.head(2)      # test dataset에 대한 inference를 진행해보겠습니다.
-
-
-# In[ ]:
-
-
 # 저장된 모델을 불러옵니다.
 with open('saved_model.pkl', 'rb') as f:
     model = pickle.load(f)
-
-
-# In[ ]:
 
 
 # %%time
@@ -739,7 +595,7 @@ real_test_pred          # 예측값들이 출력됨을 확인할 수 있습니�
 
 # 앞서 예측한 예측값들을 저장합니다.
 preds_df = pd.DataFrame(real_test_pred.astype(int), columns=["target"])
-preds_df.to_csv('output.csv', index=False)
+preds_df.to_csv('/data/ephemeral/home/AI_Portfolio/AI_Projects/House_Price_Prediction/competition/code/1.1_RMSE_only.csv', index=False)
 
 
 # In[ ]:
