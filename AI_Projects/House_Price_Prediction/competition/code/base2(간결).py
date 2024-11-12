@@ -1,7 +1,7 @@
-get_ipython().system('pip install eli5==0.13.0')
+# get_ipython().system('pip install eli5==0.13.0')
 
-# 한글 폰트 사용을 위한 라이브러리입니다.
-get_ipython().system('apt-get install -y fonts-nanum')
+# # 한글 폰트 사용을 위한 라이브러리입니다.
+# get_ipython().system('apt-get install -y fonts-nanum')
 
 # visualization
 import matplotlib.pyplot as plt

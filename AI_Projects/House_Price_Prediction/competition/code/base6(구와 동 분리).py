@@ -1,4 +1,7 @@
 # %%
+location = '/data/ephemeral/home/model-pkl/'
+file_name = '6_onehot_address_base'
+
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 fe = fm.FontEntry(
@@ -77,8 +80,6 @@ model = RandomForestRegressor(n_estimators=5, criterion='squared_error', random_
 model.fit(X_train, y_train)
 
 # 학습된 모델을 저장합니다. Pickle 라이브러리를 이용하겠습니다.
-location = '/data/ephemeral/home/model-pkl/'
-file_name = '6_onehot_address_base'
 location_file_name = location + file_name + '.pkl'
 with open(f'{location_file_name}', 'wb') as f:
     pickle.dump(model, f)
