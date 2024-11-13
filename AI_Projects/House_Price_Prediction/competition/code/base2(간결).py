@@ -163,7 +163,7 @@ sns.boxplot(data = concat_select, x = '전용면적', color='lightgreen')
 plt.title('전용면적 분포')
 plt.xlabel('Area')
 plt.show()
-
+#%%
 # 이상치 제거 방법에는 IQR을 이용하겠습니다.
 def remove_outliers_iqr(dt, column_name):
     df = dt.query('is_test == 0')       # train data 내에 있는 이상치만 제거하도록 하겠습니다.

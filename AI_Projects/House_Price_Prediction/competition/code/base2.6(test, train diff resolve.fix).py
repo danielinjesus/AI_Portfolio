@@ -334,7 +334,7 @@ X_train = dt_train.drop(['target'], axis=1)
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=2023)
 
 # RandomForestRegressor를 이용해 회귀 모델을 적합시키겠습니다.
-model = RandomForestRegressor(n_estimators=5, criterion='squared_error', random_state=1, n_jobs=-1)
+model = RandomForestRegressor(n_estimators=100, criterion='squared_error', random_state=1, n_jobs=-1)
 model.fit(X_train, y_train)
 pred = model.predict(X_val)
 
