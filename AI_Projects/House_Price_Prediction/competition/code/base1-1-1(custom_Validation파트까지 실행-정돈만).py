@@ -117,25 +117,11 @@ dt_test['is_test'] = 1
 concat = pd.concat([dt, dt_test])     # 하나의 데이터로 만들어줍니다.
 print(concat)
 
-
-# In[ ]:
-
-
 concat['is_test'].value_counts()      # train과 test data가 하나로 합쳐진 것을 확인할 수 있습니다.
-
-
-# In[ ]:
-
 
 # 칼럼 이름을 쉽게 바꿔주겠습니다. 다른 칼럼도 사용에 따라 바꿔주셔도 됩니다!
 concat = concat.rename(columns={'전용면적(㎡)':'전용면적'})
 print(concat)
-
-
-
-
-# In[ ]:
-
 
 # 실제로 결측치라고 표시는 안되어있지만 아무 의미도 갖지 않는 element들이 아래와 같이 존재합니다.
 # 아래 3가지의 경우 모두 아무 의미도 갖지 않는 element가 포함되어 있습니다.

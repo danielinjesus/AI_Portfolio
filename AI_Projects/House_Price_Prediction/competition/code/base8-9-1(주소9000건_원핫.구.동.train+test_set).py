@@ -1,11 +1,22 @@
 # %%
 
+from IPython.display import display
+
 import os
 if not os.path.exists('/data/ephemeral/home/AI_Portfolio/AI_Projects/House_Price_Prediction/competition/submission/'):
     print("경로가 존재하지 않습니다.")
 
+# 현재 파일 이름을 확장자 포함해서 가져옴
+current_file_name = os.path.basename(__file__)
+print(current_file_name)
+
+# 확장자를 제외한 파일 이름
+current_file_name_without_extension = os.path.splitext(current_file_name)[0]
+print(current_file_name_without_extension)
+#%%
+
 location = '/data/ephemeral/home/AI_Portfolio/AI_Projects/House_Price_Prediction/competition/submission/'
-file_name = '8.1_full_addr_label_gu_dong'
+file_name = current_file_name_without_extension
 location_file_name = location + file_name
 
 import matplotlib.pyplot as plt
@@ -40,14 +51,6 @@ dt_test['full_addr'] = dt_test['시군구'] + dt_test['번지'].fillna('')
 dt_train = dt_train[['전용면적(㎡)', '계약년월', '시군구', '층', 'full_addr', 'target']]
 dt_test = dt_test[['전용면적(㎡)', '계약년월', '시군구', '층', 'full_addr']]
 
-# label_encoder = LabelEncoder()
-
-dt_train['full_addr_encoded'] = LabelEncoder().fit_transform(dt_train['full_addr'])
-dt_test['full_addr_encoded'] = LabelEncoder().fit_transform(dt_test['full_addr'])
-
-dt_train = dt_train.drop(columns=['full_addr'])
-dt_test = dt_test.drop(columns=['full_addr'])
-
 dt_train = dt_train.rename(columns={'전용면적(㎡)':'apt_area'})
 dt_test = dt_test.rename(columns={'전용면적(㎡)':'apt_area'})
 
@@ -55,12 +58,10 @@ dt_test['apt_area'] = dt_test['apt_area'].round(2)
 
 dt_train['cont_year'] = dt_train['계약년월'].astype('str').map(lambda x : x[:4])
 dt_train['cont_month'] = dt_train['계약년월'].astype('str').map(lambda x : x[4:])
-# dt_train['cont_date'] = pd.to_datetime(dt_train['cont_year']+'-'+dt_train['cont_month']+'-01')
 del dt_train['계약년월']
 
 dt_test['cont_year'] = dt_test['계약년월'].astype('str').map(lambda x : x[:4])
 dt_test['cont_month'] = dt_test['계약년월'].astype('str').map(lambda x : x[4:])
-# dt_test['cont_date'] = pd.to_datetime(dt_test['cont_year']+'-'+dt_test['cont_month']+'-01')
 del dt_test['계약년월']
 
 dt_train['cont_year'] = dt_train['cont_year'].astype(int)
@@ -69,26 +70,40 @@ dt_train['cont_month'] = dt_train['cont_month'].astype(int)
 dt_test['cont_year'] = dt_test['cont_year'].astype(int)
 dt_test['cont_month'] = dt_test['cont_month'].astype(int)
 
+addresses = dt_train['full_addr'].value_counts()
+# print(addresses)
+addresses_train = addresses[addresses < 11].index
+dt_train['full_addr'] = dt_train['full_addr'].apply(lambda x: 'others' if x in addresses_train else x)
+print(dt_train['full_addr'].value_counts().shape)
+
+addresses1 = dt_test['full_addr'].value_counts()
+# print(addresses1)
+addresses_test1 = addresses[addresses < 11].index
+dt_test['full_addr'] = dt_test['full_addr'].apply(lambda x: 'others' if x in addresses_test1 else x)
+print(dt_test['full_addr'].value_counts().shape)
+# %%
+
 # 시군구, 년월 등 분할할 수 있는 변수들은 세부사항 고려를 용이하게 하기 위해 모두 분할해 주겠습니다.
 dt_train['구'] = dt_train['시군구'].map(lambda x : x.split()[1])
 dt_train['동'] = dt_train['시군구'].map(lambda x : x.split()[2])
-dt_train = pd.get_dummies(dt_train, columns=['구', '동'])
+dt_train = pd.get_dummies(dt_train, columns=['구', '동', 'full_addr'])
 del dt_train['시군구']
 
 dt_test['구'] = dt_test['시군구'].map(lambda x : x.split()[1])
 dt_test['동'] = dt_test['시군구'].map(lambda x : x.split()[2])
-dt_test = pd.get_dummies(dt_test, columns=['구', '동'])
+dt_test = pd.get_dummies(dt_test, columns=['구', '동', 'full_addr'])
 del dt_test['시군구']
 
 # Train과 Test의 원-핫 인코딩된 열을 일치시킴
 dt_test = dt_test.reindex(columns=dt_train.columns, fill_value=0)
 dt_test = dt_test.drop(columns=['target'], errors='ignore')
 
-# print(pd.unique(dt_train['구']))
-print(dt_train.info())
+display(dt_train.shape)
+display(dt_train.info())
 print(dt_train.columns)
-# print(dt_test.info())
-# %%
+#%%
+
+# print(pd.unique(dt_train['구'])
 # print(dt_test.columns)
 print(dt_train.head(5))
 print(dt_test.head(5))

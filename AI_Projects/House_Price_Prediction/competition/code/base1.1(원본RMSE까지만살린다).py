@@ -548,9 +548,6 @@ X_train = dt_train.drop(['target'], axis=1)
 # Hold out split을 사용해 학습 데이터와 검증 데이터를 8:2 비율로 나누겠습니다.
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=2023)
 
-# In[ ]:
-
-
 # RandomForestRegressor를 이용해 회귀 모델을 적합시키겠습니다.
 model = RandomForestRegressor(n_estimators=5, criterion='squared_error', random_state=1, n_jobs=-1)
 model.fit(X_train, y_train)
