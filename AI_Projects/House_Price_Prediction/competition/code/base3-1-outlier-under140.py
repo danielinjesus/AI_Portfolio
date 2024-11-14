@@ -205,7 +205,7 @@ print(f"train {outlier}이상 갯수: {len(train_area[train_area['전용면적']
 
 train_area = train_area [ train_area['전용면적'] < outlier ] # train data 내에 있는 이상치만 제거하도록 하겠습니다.
 ######################
-train_area = train_area [ ( train_area['target'] / train_area['전용면적'] ) < 1300 ]
+# train_area = train_area [ ( train_area['target'] / train_area['전용면적'] ) < 1300 ]
 ######################
 
 concat_select = pd.concat([train_area, test_area])
