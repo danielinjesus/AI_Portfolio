@@ -192,25 +192,32 @@ plt.show()
 # 위 방법으로 전용 면적에 대한 이상치를 제거해보겠습니다.
 # concat_select = remove_outliers_iqr(concat_select, '전용면적')
 
+outlier = 140
 #############################################################################
 print(concat_select.shape)
 
-print(f"train+test 280이상 갯수: {len(concat_select[concat_select['전용면적'] > 280])}")
+print(f"train+test {outlier}이상 갯수: {len(concat_select[concat_select['전용면적'] > outlier])}")
 
 train_area = concat_select.query('is_test == 0')       
 test_area = concat_select.query('is_test == 1')
 
-print(f"train 280이상 갯수: {len(train_area[train_area['전용면적'] > 280])}")
+print(f"train {outlier}이상 갯수: {len(train_area[train_area['전용면적'] > outlier])}")
 
-train_area = train_area [ train_area['전용면적'] < 280 ] # train data 내에 있는 이상치만 제거하도록 하겠습니다.
+train_area = train_area [ train_area['전용면적'] < outlier ] # train data 내에 있는 이상치만 제거하도록 하겠습니다.
+######################
+dt_train['price_per_area'] = train_area['target'] / train_area['전용면적']
+
+
+b = (dt_train['price_per_area'] > 1300).sum()
+######################
 
 concat_select = pd.concat([train_area, test_area])
 
-print(f"train에서 제거 후 test와 결합 후 280이상 갯수: {len(concat_select[concat_select['전용면적']>280])}")
+print(f"train에서 제거 후 test와 결합 후 {outlier}이상 갯수: {len(concat_select[concat_select['전용면적']> outlier ])}")
 
-print(concat_select[concat_select['전용면적'] > 280])
+print(concat_select[concat_select['전용면적'] > outlier])
 
-# 이상치 제거 후의 shape은 아래와 같습니다. 약 10만개의 데이터가 제거된 모습을 확인할 수 있습니다.
+# 이상치 제거 후의 shape
 print(concat_select.shape)
 #############################################################################
 #%%
@@ -370,7 +377,7 @@ plt.show()
 
 # 학습된 모델을 저장합니다. Pickle 라이브러리를 이용하겠습니다.
 location = '/data/ephemeral/home/model-pkl/'
-file_name = 'base3-1-1_model'
+file_name = (f'base3-1-1_model_{outlier}')
 location_file_name = location + file_name + '.pkl'
 with open(f'{location_file_name}', 'wb') as f:
     pickle.dump(model, f)
@@ -469,5 +476,5 @@ real_test_pred          # 예측값들이 출력됨을 확인할 수 있습니�
 output = '/data/ephemeral/home/AI_Portfolio/AI_Projects/House_Price_Prediction/competition/submission/' + file_name
 # 앞서 예측한 예측값들을 저장합니다.
 preds_df = pd.DataFrame(real_test_pred.astype(int), columns=["target"])
-preds_df.to_csv(f'{output}_output.csv', index=False)
+preds_df.to_csv(f'{output}_140_output.csv', index=False)
 # %%
