@@ -62,6 +62,18 @@ del concat['계약년월']
 concat['cont_year'] = concat['cont_year'].astype(int)
 concat['cont_month'] = concat['cont_month'].astype(int)
 
+def get_season(month):     # 계절 정의 함수
+    if month in [12, 1, 2]:
+        return 'winter'
+    elif month in [3, 4, 5]:
+        return 'spring'
+    elif month in [6, 7, 8]:
+        return 'summer'
+    else:
+        return 'autumn'
+concat['season'] = concat['cont_month'].apply(get_season)     # 계절 변수 생성
+concat = pd.get_dummies(concat, columns=['season'], drop_first=True)
+
 # 구와 동을 분리칼럼저장하고 One-hot encoding
 concat['구'] = concat['시군구'].map(lambda x : x.split()[1])
 concat['동'] = concat['시군구'].map(lambda x : x.split()[2])
@@ -84,6 +96,31 @@ print(concat.columns)
 print(concat.head(5))
 print(concat.shape)
 #%%
+outlier = 280
+#############################################################################
+print(concat.shape)
+
+print(f"train+test {outlier}이상 갯수: {len(concat[concat['apt_area'] > outlier])}")
+
+train_area = concat.query('is_test == 0')       
+test_area = concat.query('is_test == 1')
+
+print(f"train {outlier}이상 갯수: {len(train_area[train_area['apt_area'] > outlier])}")
+
+train_area = train_area [ train_area['apt_area'] < outlier ] # train data 내에 있는 이상치만 제거하도록 하겠습니다.
+######################
+# train_area = train_area [ ( train_area['target'] / train_area['전용면적'] ) < 1300 ]
+######################
+
+concat = pd.concat([train_area, test_area])
+
+print(f"train에서 제거 후 test와 결합 후 {outlier}이상 갯수: {len(concat[concat['apt_area']> outlier ])}")
+
+print(concat[concat['apt_area'] > outlier])
+
+# 이상치 제거 후의 shape
+print(concat.shape)
+#############################################################################
 
 # 이제 다시 train과 test dataset을 분할해줍니다. 위에서 제작해 놓았던 is_test 칼럼을 이용합니다.
 dt_train = concat.query('is_test==0')
@@ -106,14 +143,20 @@ X_train = X_train.drop(['target'], axis=1)
 # Hold out split을 사용해 학습 데이터와 Valid 데이터를 8:2 비율로 나누겠습니다.
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=2023)
 
+#####################-로그변환-#################################
+y_train = np.log1p(y_train)
+
 # RandomForestRegressor를 이용해 회귀 모델을 적합시키겠습니다.
 model = RandomForestRegressor(n_estimators=5, criterion='squared_error', random_state=1, n_jobs=-1)
 model.fit(X_train, y_train)
 pred = model.predict(X_val)
 
+#####################-로그변환 한 것을 지수화하여 원복-#################################
+pred = np.expm1(pred)
+
 # 랜덤포레스트의 하이퍼파라미터도 데이터에 맞게 지정해줄 수 있습니다. 데이터에 맞는 하이퍼파라미터를 찾는 것도 성능 향상에 도움이 될 수 있습니다.
 # 회귀 관련 metric을 통해 train/valid의 모델 적합 결과를 관찰합니다.
-print(f'RandomForest RMSE test: {np.sqrt(metrics.mean_squared_error(y_val, pred))}')
+print(f'RandomForest Log_Transformation RMSE test: {np.sqrt(metrics.mean_squared_error(y_val, pred))}')
 #####################################################################################################
 # RandomForestRegressor를 이용해 회귀 모델을 적합시키겠습니다.
 X_train = dt_train.copy()
