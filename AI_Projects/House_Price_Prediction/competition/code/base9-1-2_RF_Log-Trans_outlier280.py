@@ -120,10 +120,11 @@ dt_test.drop(['is_test'], axis = 1, inplace=True)
 
 dt_test.drop(['target'], axis = 1, inplace=True)
 
-X_train = dt_train.copy()
+
 
 #%%
 #####################################################################################################
+X_train = dt_train.copy()
 # Target과 독립변수들을 분리해줍니다.
 y_train = X_train['target']
 X_train = X_train.drop(['target'], axis=1)
