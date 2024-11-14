@@ -106,10 +106,16 @@ X_train = X_train.drop(['target'], axis=1)
 # Hold out split을 사용해 학습 데이터와 Valid 데이터를 8:2 비율로 나누겠습니다.
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=2023)
 
+#####################-로그변환-#################################
+y_train = np.log1p(y_train)
+
 # RandomForestRegressor를 이용해 회귀 모델을 적합시키겠습니다.
 model = RandomForestRegressor(n_estimators=5, criterion='squared_error', random_state=1, n_jobs=-1)
 model.fit(X_train, y_train)
 pred = model.predict(X_val)
+
+#####################-로그변환 한 것을 지수화하여 원복-#################################
+pred = np.expm1(pred)
 
 # 랜덤포레스트의 하이퍼파라미터도 데이터에 맞게 지정해줄 수 있습니다. 데이터에 맞는 하이퍼파라미터를 찾는 것도 성능 향상에 도움이 될 수 있습니다.
 # 회귀 관련 metric을 통해 train/valid의 모델 적합 결과를 관찰합니다.
