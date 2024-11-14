@@ -2,7 +2,7 @@
 
 # # 한글 폰트 사용을 위한 라이브러리입니다.
 # get_ipython().system('apt-get install -y fonts-nanum')
-
+from IPython.display import display
 # visualization
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
