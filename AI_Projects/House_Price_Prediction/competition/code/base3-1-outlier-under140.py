@@ -192,7 +192,7 @@ plt.show()
 # 위 방법으로 전용 면적에 대한 이상치를 제거해보겠습니다.
 # concat_select = remove_outliers_iqr(concat_select, '전용면적')
 
-outlier = 140
+outlier = 280
 #############################################################################
 print(concat_select.shape)
 
@@ -205,10 +205,7 @@ print(f"train {outlier}이상 갯수: {len(train_area[train_area['전용면적']
 
 train_area = train_area [ train_area['전용면적'] < outlier ] # train data 내에 있는 이상치만 제거하도록 하겠습니다.
 ######################
-dt_train['price_per_area'] = train_area['target'] / train_area['전용면적']
-
-
-b = (dt_train['price_per_area'] > 1300).sum()
+train_area = train_area [ ( train_area['target'] / train_area['전용면적'] ) < 1300 ]
 ######################
 
 concat_select = pd.concat([train_area, test_area])
@@ -476,5 +473,5 @@ real_test_pred          # 예측값들이 출력됨을 확인할 수 있습니�
 output = '/data/ephemeral/home/AI_Portfolio/AI_Projects/House_Price_Prediction/competition/submission/' + file_name
 # 앞서 예측한 예측값들을 저장합니다.
 preds_df = pd.DataFrame(real_test_pred.astype(int), columns=["target"])
-preds_df.to_csv(f'{output}_140_output.csv', index=False)
+preds_df.to_csv(f'{output}_면적당1300미만_output.csv', index=False)
 # %%
